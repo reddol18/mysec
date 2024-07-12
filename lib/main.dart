@@ -119,6 +119,18 @@ class _MyHomePageState extends State<MyHomePage> {
               widget.sttValues.lastWords,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
+            ElevatedButton(
+              onPressed: () {
+
+              },
+              style: ElevatedButton.styleFrom(
+                elevation: 10.0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0),
+                ),
+              ),
+              child: const Text('보내기'),
+            ),
           ],
         ),
       ),
