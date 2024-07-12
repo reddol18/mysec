@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:mysec/stt_tools.dart';
+import 'package:provider/provider.dart';
 
-late SttTools sttTools;
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  sttTools = new SttTools('구글 캘린더 스케쥴 입력기');
-  sttTools.initializeService();
-
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (context) => SttTools(),
+      child: const MyApp(),
+    )
+  );
 }
 
 class MyApp extends StatelessWidget {
@@ -16,6 +18,7 @@ class MyApp extends StatelessWidget {
   // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    final SttTools sttTools = Provider.of<SttTools>(context);
     return MaterialApp(
       title: '구글 캘린더 스케쥴 입력기',
       theme: ThemeData(
@@ -30,13 +33,14 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(title: '구글 캘린더 스케쥴 입력기'),
+      home: MyHomePage(title: '구글 캘린더 스케쥴 입력기', sttValues: sttTools.sttValues,),
     );
   }
 }
 
 class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+  final SttValues sttValues;
+  const MyHomePage({super.key, required this.title, required this.sttValues});
 
   // This widget is the home page of your application. It is stateful, meaning
   // that it has a State object (defined below) that contains fields that affect
@@ -54,17 +58,23 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  String _sentence= "";
-
+  @override
+  void initState() {
+    super.initState();
+  }
   void _listenSpeak() {
     setState(() {
-      _sentence = sttTools.getLastWords();
+      if (widget.sttValues.onListen) {
+        Provider.of<SttTools>(context, listen: false).pause();
+      } else {
+        Provider.of<SttTools>(context, listen: false).restart();
+      }
     });
   }
 
   @override
   void dispose() {
-    sttTools.stopListening();
+    Provider.of<SttTools>(context, listen: false).stop();
     super.dispose();
   }
 
@@ -106,7 +116,7 @@ class _MyHomePageState extends State<MyHomePage> {
               '이렇게 말씀 하신게 맞나요?',
             ),
             Text(
-              _sentence,
+              widget.sttValues.lastWords,
               style: Theme.of(context).textTheme.headlineMedium,
             ),
           ],
@@ -114,8 +124,8 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _listenSpeak,
-        tooltip: 'Listen',
-        child: const Icon(Icons.speaker),
+        tooltip: widget.sttValues.onListen ? 'Stop' : 'Listen',
+        child: widget.sttValues.onListen ? const Icon(Icons.stop) : const Icon(Icons.speaker),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
