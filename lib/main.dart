@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:mysec/stt_tools.dart';
 import 'package:provider/provider.dart';
 
+import 'kafka_tools.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   runApp(
@@ -120,8 +122,10 @@ class _MyHomePageState extends State<MyHomePage> {
               style: Theme.of(context).textTheme.headlineMedium,
             ),
             ElevatedButton(
-              onPressed: () {
-
+              onPressed: () async {
+                KafkaTools ktool = new KafkaTools("127.0.0.1", 9092, "mysec_cg", "mysec", 0, 1);
+                await ktool.send(widget.sttValues.lastWords);
+                ktool.close();
               },
               style: ElevatedButton.styleFrom(
                 elevation: 10.0,

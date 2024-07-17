@@ -1,27 +1,29 @@
 import 'package:kafkabr/kafka.dart';
 
-class kafka_tools {
+class KafkaTools {
   late var session;
   late var group;
   late var topics;
   late var consumer;
   late var producer;
-  kafka_tools(String ip, int port, String cgroup, String topic, String startIndex, String lastIndex) {
+  late String topic;
+  KafkaTools(String ip, int port, String cgroup, String topic, int startIndex, int lastIndex) {
     var host = new ContactPoint('127.0.0.1', 9092);
     session = new KafkaSession([host]);
     producer = new Producer(session, 1, 1000);
-    group = new ConsumerGroup(session, 'consumerGroupName');
+    group = new ConsumerGroup(session, cgroup);
+    this.topic = topic;
     topics = {
-      'topicName': [0, 1] // list of partitions to consume from.
+      topic: [startIndex, lastIndex] // list of partitions to consume from.
     };
     consumer = new Consumer(session, group, topics, 100, 1);
   }
 
-  void send(String message) async {
+  Future<void> send(String message) async {
     var result = await producer.produce([
-      new ProduceEnvelope('topicName', 0, [new Message('msgForPartition0'.codeUnits)]),
-      new ProduceEnvelope('topicName', 1, [new Message('msgForPartition1'.codeUnits)])
+      new ProduceEnvelope(topic, 0, [new Message(message.codeUnits)]),
     ]);
+    print(result);
   }
 
   void receive() async {
